@@ -1,0 +1,21 @@
+// {
+//   "editor.formatOnSave": false,
+//   "editor.formatOnPaste": false,
+//   "editor.formatOnType": false,
+
+//   // Per-language: Django & HTML
+//   "[django-html]": {
+//     "editor.formatOnSave": false,
+//     "editor.defaultFormatter": ""
+//   },
+//   "[html]": { "editor.formatOnSave": false, "editor.defaultFormatter": "" },
+
+//   // If you installed these, disable them
+//   "djlint.enable": false,
+//   "djlint.formatOnSave": false,
+//   "prettier.enable": false,
+//   "eslint.format.enable": false,
+
+//   // If ESLint is still changing files on save
+//   "editor.codeActionsOnSave": {}
+// }

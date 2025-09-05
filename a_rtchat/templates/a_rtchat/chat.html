@@ -8,9 +8,31 @@
     <div
       class="flex justify-center text-emerald-400 bg-gray-800 p-2 sticky top-0 z-10"
     >
-      {% comment %}
+      {% if other_user %}
+      <div
+        id="online-count"
+        class="absolute top-2 left-2 rounded-full bg-gray-500 p-1.5"
+      ></div>
+      <a href="{% url 'profile' other_user.username %}">
+        <div class="flex items-center gap-2 p-4 sticky top-0 z-10">
+          <img
+            class="w-10 h-10 rounded-full object-cover"
+            src="{{ other_user.profile.avatar }}"
+          />
+          <div>
+            <span class="font-bold text-white"
+              >{{ other_user.profile.name }}</span
+            >
+            <span class="text-gray-400 text-sm font-light"
+              >@{{ other_user.username }}</span
+            >
+          </div>
+        </div>
+      </a>
+      {%else%} {% comment %}
       <div id="online-count"></div>
-      {% endcomment %} <span id="online-count" class="pr-1"></span> online
+      {% endcomment %}
+      <span id="online-count" class="pr-1"></span> online {%endif%}
     </div>
     <div id="chat_container" class="overflow-y-auto grow">
       <ul id="chat_messages" class="flex flex-col justify-end gap-2 p-4">
@@ -65,7 +87,7 @@
           id="chat_message_form"
           class="w-full"
           hx-ext="ws"
-          ws-connect="/ws/chatroom/public-chat"
+          ws-connect="/ws/chatroom/{{ chatroom_name }}"
           ws-send
           hx-on::ws-after-send="this.reset()"
         >

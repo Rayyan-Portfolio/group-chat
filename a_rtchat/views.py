@@ -1,14 +1,24 @@
 from django.shortcuts import render,get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from .models import chatGroup,groupMessage
+from django.http import Http404
+from .models import *
 from .forms import ChatMessageForm
 
 @login_required
-def chat_group(request):
-    chat_group=get_object_or_404(chatGroup, group_name="public-chat")  # Example to get a specific chat group
+def chat_group(request, chatroom_name="public-chat"):
+    chat_group=get_object_or_404(chatGroup, group_name=chatroom_name)  # Example to get a specific chat group
     chat_messages=chat_group.chat_messages.all().order_by('created')[:50]
     # .objects.filter(group=chat_group).order_by('created')
     form=ChatMessageForm()
+    
+    other_user=None
+    if chat_group.is_private:
+        if request.user not in chat_group.members.all():
+            raise Http404("You are not a member of this private chatroom.")
+        for member in chat_group.members.all():
+            if member != request.user:
+                other_user=member
+                break       
     
     if request.method=='POST':
         form=ChatMessageForm(request.POST)
@@ -23,60 +33,33 @@ def chat_group(request):
                 }
             return render(request, 'a_rtchat/partials/chat_message_p.html', context)
             
+    context = {
+        'chat_messages': chat_messages,
+        'form': form, 
+        'other_user': other_user,
+        'chatroom_name': chatroom_name,
+        }
             
-    return render(request, 'a_rtchat/chat.html', {'chat_messages': chat_messages, 'form': form})
+    return render(request, 'a_rtchat/chat.html', context)
 
 
-# from django.shortcuts import render,get_object_or_404, redirect
-# from django.contrib.auth.decorators import login_required
-# from .models import chatGroup,groupMessage
-# from .forms import ChatMessageForm
-
-# from django.template.loader import render_to_string
-# from django.utils.safestring import mark_safe
-
-# @login_required
-# def chat_group(request):
-#     grp = get_object_or_404(chatGroup, group_name="public-chat")
-#     msgs = groupMessage.objects.filter(group=grp).order_by("created")[:50]
-
-#     if request.method == "POST":
-#         form = ChatMessageForm(request.POST)
-#         if form.is_valid():
-#             m = form.save(commit=False)
-#             m.author = request.user
-#             m.group  = grp
-#             m.save()
-
-#             # HTMX request -> return one rendered <li>
-#             if request.headers.get("HX-Request") == "true":
-#                 li_html = render_to_string(
-#                     "a_rtchat/chat_message.html",
-#                     {"message": m, "user": request.user},
-#                     request=request,
-#                 )
-#                 from django.http import HttpResponse
-#                 return HttpResponse(li_html)
-
-#             return redirect("home")
-#     else:
-#         form = ChatMessageForm()
-
-#     # Pre-render all saved messages to HTML
-#     messages_html = "".join(
-#         render_to_string(
-#             "a_rtchat/chat_message.html",
-#             {"message": msg, "user": request.user},
-#             request=request,
-#         )
-#         for msg in msgs
-#     )
-
-#     return render(
-#         request,
-#         "a_rtchat/chat.html",
-#         {
-#             "messages_html": mark_safe(messages_html),  # already-rendered HTML
-#             "form": form,
-#         },
-#     )
+@login_required
+def get_or_create_chatroom(request, username):
+    if  request.user.username ==username:
+        return redirect('home')
+    other_user = User.objects.get(username=username)
+    my_chatrooms = request.user.chat_groups.filter(is_private=True)
+    
+    if my_chatrooms.exists():
+        for chatroom in my_chatrooms:
+            if other_user in chatroom.members.all():
+                chatroom = chatroom
+                break
+            else:
+                chatroom = chatGroup.objects.create(is_private=True)
+                chatroom.members.add(request.user, other_user)            
+    else:
+        chatroom = chatGroup.objects.create(is_private=True)
+        chatroom.members.add(request.user, other_user)
+        
+    return redirect('chatroom', chatroom_name=chatroom.group_name) 
