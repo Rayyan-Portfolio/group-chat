@@ -6,7 +6,7 @@ from .forms import ChatMessageForm
 @login_required
 def chat_group(request):
     chat_group=get_object_or_404(chatGroup, group_name="public-chat")  # Example to get a specific chat group
-    chat_messages=chat_group.chat_messages.all().order_by('created')[:30]
+    chat_messages=chat_group.chat_messages.all().order_by('created')[:50]
     # .objects.filter(group=chat_group).order_by('created')
     form=ChatMessageForm()
     

@@ -1,0 +1,29 @@
+<span id="online-count" hx-swap-oob="outerHTML" class="fade-in-out pr-1">
+  {{ online_count }}
+  <style>
+    @keyframes fadeInScale {
+      from {
+        transform: scale(4);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    .fade-in-out {
+      animation: fadeInScale 0.8s ease;
+    }
+  </style>
+</span>
+{% comment %} {% if online_count %}
+<div
+  id="online-count"
+  class="absolute top-2 left-2 rounded-full bg-green-500 p-1.5"
+></div>
+{% else %}
+<div
+  id="online-count"
+  class="absolute top-2 left-2 rounded-full bg-gray-500 p-1.5"
+></div>
+{% endif %} {% endcomment %}
